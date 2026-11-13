@@ -2,10 +2,10 @@
 window.CONTEUDO = {
   nome: 'CORLEONE',
   links: {
-    whatsapp: 'https://wa.me/5500000000000?text=Oi%20Daniel%2C%20vi%20seu%20portf%C3%B3lio', // [EDITAR] número real
-    instagram: 'https://www.instagram.com/mazecode.imoveis/', // [EDITAR] perfil pessoal?
-    linkedin: '#', // [EDITAR]
-    github: '#', // [EDITAR]
+    whatsapp: 'https://wa.me/5543996494154?text=Oi%20Daniel%2C%20vi%20seu%20portf%C3%B3lio',
+    instagram: 'https://www.instagram.com/mazecode.io/',
+    linkedin: 'https://www.linkedin.com/in/daniel-collione-fais-893602190/',
+    github: 'https://github.com/danielcollione',
     site: 'https://mazecode.io',
   },
 

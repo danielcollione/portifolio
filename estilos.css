@@ -113,7 +113,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .hero__retrato {
   position: absolute; left: 50%; bottom: 0; z-index: 3;
-  height: min(70svh, 92vw); width: auto; transform: translateX(-50%);
+  height: min(70svh, 92vw); width: auto; max-width: none; transform: translateX(-50%);
   pointer-events: none;
 }
 .hero__esq, .hero__dir {
@@ -440,7 +440,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (max-width: 860px) {
   .nav__menu { display: none; }
   .hero__titulo { top: 110px; }
-  .hero__retrato { height: 58svh; }
+  .hero__retrato { height: min(58svh, 128vw); }
   .hero__esq small { display: none; }
   .hero__dir { max-width: 170px; gap: 12px; }
   .hero__dir p { display: none; }
@@ -456,6 +456,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .slide__titulo { margin: 16px 0; }
   .slide__texto { font-size: .9rem; }
   .sobre__corpo { font-size: .74rem; }
+  /* a figura fica a ~61% da largura da arte: no retrato do celular, centraliza um pouco à direita */
+  .sobre__luz { object-position: 61% 50%; }
   .serv__grade { grid-template-columns: 1fr; }
   .serv__visual { order: -1; margin: 0 8px; }
   .serv__selo { font-size: 11px; padding: 7px 11px; }

@@ -242,11 +242,11 @@
     .to({}, { duration: 0.25 })
     .to(abre, { k: 1, duration: 1, ease: 'power2.inOut', onUpdate: recortar }, 0.25)
     // a figura fica em ~65% da largura: começa deslocada para caber no cartão e volta ao lugar
-    .fromTo('.sobre__luz', { scale: 1.45, x: () => -0.15 * 1.45 * innerWidth, y: () => -0.05 * 1.45 * innerHeight },
+    .fromTo('.sobre__luz', { scale: 1.45, x: () => -(celular() ? 0.12 : 0.15) * 1.45 * innerWidth, y: () => -0.05 * 1.45 * innerHeight },
       { scale: 1, x: 0, y: 0, duration: 1, ease: 'power2.inOut' }, 0.25)
     .to('.sobre__arte', { scale: 1.2, duration: 1, ease: 'power2.in' }, 0.25)
-    .to('.sobre__a', { x: () => -innerWidth * 0.85, duration: 0.9, ease: 'power2.in' }, 0.3)
-    .to('.sobre__b', { x: () => innerWidth * 0.85, duration: 0.9, ease: 'power2.in' }, 0.3)
+    .to('.sobre__a', { x: () => -innerWidth * (celular() ? 1.3 : 0.85), duration: 0.9, ease: 'power2.in' }, 0.3)
+    .to('.sobre__b', { x: () => innerWidth * (celular() ? 1.3 : 0.85), duration: 0.9, ease: 'power2.in' }, 0.3)
     .to('.sobre__frase', { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 1.15)
     .to('.sobre__rodape', { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, 1.3)
     .to({}, { duration: 0.6 });
@@ -301,7 +301,7 @@
     // grande o bastante para apresentar pelo Meet
     const cw = celular() ? W * 0.8 : Math.min(W * 0.52, H * 0.62 / 0.5625, 1100);
     const ch = cw * 0.5625; // vídeos em 16:9
-    return { W, H, cw, ch, gap: cw * 0.06, xc: celular() ? W * 0.5 : W * 0.56, yc: H * 0.45, R: cw * 1.25 };
+    return { W, H, cw, ch, gap: cw * 0.06, xc: celular() ? W * 0.5 : W * 0.56, yc: H * 0.45, R: cw * 1.25, tMax: 0.85 };
   };
   const atualizarLegenda = (g) => {
     legenda.style.left = g.xc + 'px';
@@ -380,7 +380,7 @@
     if (!gl) return null;
     const vs = `
       attribute vec2 aUv;
-      uniform vec2 uTela; uniform float uCx, uCy, uW, uH, uXb, uXr, uR;
+      uniform vec2 uTela; uniform float uCx, uCy, uW, uH, uXb, uXr, uR, uTMax;
       varying vec2 vUv; varying float vDobra;
       void main(){
         float x = uCx + (aUv.x - .5) * uW;
@@ -390,7 +390,7 @@
         float d = uXb - x;
         if (d > 0.) {
           // a fita faz uma curva para baixo à esquerda e segue reta depois de ~49 graus
-          float tMax = 0.85;
+          float tMax = uTMax;
           float th = min(d / uR, tMax);
           float resto = max(d - uR * tMax, 0.);
           float px = uXb - uR * sin(th) - resto * cos(tMax);
@@ -403,7 +403,7 @@
         float e = x - uXr;
         if (e > 0.) {
           // chegada: a mesma curva, espelhada, à direita
-          float tMax = 0.85;
+          float tMax = uTMax;
           float th = min(e / uR, tMax);
           float resto = max(e - uR * tMax, 0.);
           float px = uXr + uR * sin(th) + resto * cos(tMax);
@@ -454,7 +454,7 @@
     gl.enableVertexAttribArray(aUv);
     gl.vertexAttribPointer(aUv, 2, gl.FLOAT, false, 0, 0);
     const U = {};
-    ['uTela', 'uCx', 'uCy', 'uW', 'uH', 'uXb', 'uXr', 'uR', 'uVel', 'uOk', 'uTex'].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    ['uTela', 'uCx', 'uCy', 'uW', 'uH', 'uXb', 'uXr', 'uR', 'uTMax', 'uVel', 'uOk', 'uTex'].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     const enviar = (t, fonte) => {
@@ -528,13 +528,14 @@
         gl.uniform1f(U.uXb, g.xc - g.cw / 2 - g.gap / 2);
         gl.uniform1f(U.uXr, g.xc + g.cw / 2 + g.gap / 2);
         gl.uniform1f(U.uR, g.R);
+        gl.uniform1f(U.uTMax, g.tMax);
         gl.uniform1f(U.uVel, vel);
         gl.uniform1i(U.uTex, 0);
         gl.activeTexture(gl.TEXTURE0);
         // de trás para a frente: a fita curvada fica atrás das retas
         for (let i = 0; i < texs.length; i++) {
           const cx = g.xc + (i - pos) * (g.cw + g.gap);
-          if (cx - g.cw / 2 > g.W || cx + g.cw / 2 < -g.W * 0.3) continue;
+          if (cx - g.cw / 2 > g.W * 1.3 || cx + g.cw / 2 < -g.W * 0.3) continue;
           gl.bindTexture(gl.TEXTURE_2D, texs[i].tex);
           gl.uniform1f(U.uOk, texs[i].ok ? 1 : 0);
           gl.uniform1f(U.uCx, cx);
@@ -636,7 +637,7 @@
       ScrollTrigger.create({ trigger: acordeao, start: 'top 80%', end: () => '+=' + innerHeight * 0.75, onUpdate: escolher });
     },
   });
-  gsap.from('.servicos__titulo', { y: 90, ease: 'none',
+  gsap.from('.servicos__titulo', { y: () => (celular() ? 0 : 90), ease: 'none',
     scrollTrigger: { trigger: '.servicos', start: 'top bottom', end: 'top top', scrub: true } });
 
   /* ---------- 7. contato ---------- */
